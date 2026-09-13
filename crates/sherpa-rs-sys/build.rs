@@ -361,7 +361,10 @@ fn main() {
     #[cfg(feature = "download-binaries")]
     {
         // Download libraries, cache and set SHERPA_LIB_PATH
-        use download_binaries::{extract_tbz, fetch_file, get_cache_dir, sha256, DIST_TABLE};
+        use download_binaries::{
+            ensure_static_lib_name, extract_tbz, extract_zip, fetch_file, get_cache_dir, sha256,
+            DIST_TABLE,
+        };
         debug_log!("Download binaries enabled");
         // debug_log!("Dist table: {:?}", DIST_TABLE.targets);
         // Try download sherpa libs and set SHERPA_LIB_PATH
@@ -393,7 +396,11 @@ fn main() {
                 let downloaded_file = fetch_file(&dist.url);
                 let hash = sha256(&downloaded_file);
                 verify_checksum(&hash, &dist.checksum);
-                extract_tbz(&downloaded_file, &cache_dir);
+                if dist.url.ends_with(".zip") {
+                    extract_zip(&downloaded_file, &cache_dir);
+                } else {
+                    extract_tbz(&downloaded_file, &cache_dir);
+                }
             } else {
                 debug_log!("Skip fetch file. Using cache from {}", lib_dir.display());
             }
@@ -409,6 +416,7 @@ fn main() {
             if let Some(libs) = dist.libs {
                 for lib in libs.iter() {
                     let lib_path = cache_dir.join(lib);
+                    ensure_static_lib_name(&lib_path);
                     let lib_parent = lib_path.parent().unwrap();
                     add_search_path(lib_parent);
                 }

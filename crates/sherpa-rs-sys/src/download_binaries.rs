@@ -165,6 +165,7 @@ impl DistTable {
         };
         let name = archive.replace(".tar.bz2", "");
         let name = name.replace(".tar.gz", "");
+        let name = name.replace(".zip", "");
 
         let libs: Option<Vec<String>> = target_dist["targets"][target].as_array().map(|libs| {
             libs.iter()
@@ -172,7 +173,15 @@ impl DistTable {
                 .collect()
         });
 
-        let url = self.url.replace("{archive}", archive);
+        // A target may name its own release URL: since sherpa-onnx v1.13.5 the iOS
+        // xcframeworks are published under the rolling "xcframework" release, not the
+        // versioned tag the other archives use.
+        let url_template = target_dist
+            .get("url")
+            .and_then(|u| u.as_str())
+            .map(|u| u.replace("{tag}", &self.tag))
+            .unwrap_or_else(|| self.url.clone());
+        let url = url_template.replace("{archive}", archive);
         let checksum = DIST_CHECKSUM.get(archive)?;
 
         // modify is_dynamic
@@ -241,6 +250,40 @@ pub fn extract_tbz(buf: &[u8], output: &Path) {
     let tar = bzip2::read::BzDecoder::new(buf); // Use BzDecoder for .bz2
     let mut archive = tar::Archive::new(tar);
     archive.unpack(output).expect("Failed to extract .tbz file");
+}
+
+/// Extract a `.zip` archive (the iOS xcframework release asset) with the host's `unzip`;
+/// iOS is only ever built from macOS, where it is always present.
+pub fn extract_zip(buf: &[u8], output: &Path) {
+    debug_log!("extracting zip to {}", output.display());
+    std::fs::create_dir_all(output).expect("Failed to create zip output dir");
+    let zip_path = output.join("archive.zip");
+    std::fs::write(&zip_path, buf).expect("Failed to write .zip file");
+    let status = std::process::Command::new("unzip")
+        .args(["-q", "-o"])
+        .arg(&zip_path)
+        .arg("-d")
+        .arg(output)
+        .status()
+        .expect("Failed to run unzip");
+    assert!(status.success(), "unzip failed for {}", zip_path.display());
+    let _ = std::fs::remove_file(&zip_path);
+}
+
+/// An xcframework packages its static library as `Name.framework/Name` with no `lib`
+/// prefix and no `.a` extension, which `-l static=Name` cannot find; place a `libName.a`
+/// beside it so the linker's search rule holds.
+pub fn ensure_static_lib_name(lib: &Path) {
+    let file_name = lib.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    if file_name.starts_with("lib") || file_name.contains('.') {
+        return;
+    }
+    let target = lib.with_file_name(format!("lib{file_name}.a"));
+    if !target.exists() && lib.exists() {
+        std::fs::hard_link(lib, &target)
+            .or_else(|_| std::fs::copy(lib, &target).map(|_| ()))
+            .expect("Failed to place a lib-prefixed static library beside the xcframework binary");
+    }
 }
 
 pub fn extract_lib_name<P: AsRef<Path>>(path: P) -> String {

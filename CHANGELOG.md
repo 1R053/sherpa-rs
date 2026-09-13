@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] — unreleased
+
+### Changed
+
+- **sherpa-onnx bumped v1.12.38 -> v1.13.8** (218 upstream commits). The one this bump is
+  for: "Fix Cohere Transcribe hallucinating sentences on silent audio" (k2-fsa/sherpa-onnx
+  #3924, 1.13.8) — a feature-level silence gate in front of the decoder, so a digitally
+  silent clip returns an empty result instead of a sentence such as "Herr Präsident, meine
+  Damen und Herren!". Also carried: FunASR-Nano/Moonshine-v2/Qwen3-ASR silent-audio fixes
+  (#3921, #3923, #3907), ScaleSilence guards (1.13.5), TopkIndex heap-buffer-overflow
+  (1.13.3), the Qwen3-ASR PRNG data race (1.13.8).
+- **onnxruntime rides along: 1.24.4 -> 1.28.2.** The macOS shared archive at v1.13.8 is
+  `sherpa-onnx-v1.13.8-osx-arm64-shared.tar.bz2` (upstream no longer publishes the
+  `-onnxruntime-<ver>-` named variant at this tag) and ships `libonnxruntime.dylib` without a
+  version suffix.
+- **iOS prebuilts moved.** From v1.13.5 upstream publishes no iOS archive under the versioned
+  release; the iOS xcframeworks live in the rolling `xcframework` release as
+  `sherpa-onnx-v<tag>-ios-static.xcframework.zip` (one static `SherpaOnnxC` per slice, with
+  onnxruntime linked in). `dist.json` targets may now carry their own `url`; `.zip` archives
+  are extracted with the host's `unzip`; a `Name.framework/Name` static binary gets a
+  `libName.a` placed beside it so `-l static=Name` resolves.
+- `diarize.rs` fills the two fields the 1.13 C API added (`compute_confidence`,
+  `window_shift_ratio`) with the values that keep 1.12 behaviour.
+- `checksum.txt` now lists only the archives `dist.json` can select on Apple targets
+  (osx-arm64 shared, osx-x64 shared, iOS static xcframework); other targets fall back to the
+  manual build as before.
+
 ## [0.7.0] — unreleased
 
 ### Added
