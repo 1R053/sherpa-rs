@@ -1,3 +1,6 @@
 sherpa-onnx-v1.13.8-osx-arm64-shared.tar.bz2	b10e5c7e2c30ea03de9c442655d14860d9edc475c6251d58a8f5f06e913a1d56
 sherpa-onnx-v1.13.8-osx-x64-shared.tar.bz2	54aad64acee9d2d596535a6080d6f22602a720af5460e1d50461b1e1b06bee40
 sherpa-onnx-v1.13.8-ios-static.xcframework.zip	6b8e769cb153343270fdccbe92e3b3db0d1c421d67fa0989ab01fdf5b2fcf2de
+
+sherpa-onnx-v1.13.8-t0337r2-osx-arm64-shared.tar.bz2	b750abea2a1f0106d4b114482ab29ce9e47a3a057bbc0910d42160d1f7a32e3f
+sherpa-onnx-v1.13.8-t0337r2-ios-static.xcframework.zip	3294aba8b530562944329621293c167f7ade0ea8c0d3f5f3cf70b2819acd2f58
