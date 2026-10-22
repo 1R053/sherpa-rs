@@ -17,7 +17,7 @@
     "aarch64-apple-darwin": {
       "static": "sherpa-onnx-{tag}-osx-arm64-static.tar.bz2",
       "dynamic": "sherpa-onnx-v1.13.8-t0337r2-osx-arm64-shared.tar.bz2",
-      "url": "https://github.com/1R053/sherpa-rs/releases/download/t0337-sherpa-onnx-v1.13.8-r2/{archive}"
+      "dynamic_url": "https://github.com/1R053/sherpa-rs/releases/download/t0337-sherpa-onnx-v1.13.8-r2/{archive}"
     },
     "x86_64-apple-darwin": {
       "static": "sherpa-onnx-{tag}-osx-x64-static.tar.bz2",

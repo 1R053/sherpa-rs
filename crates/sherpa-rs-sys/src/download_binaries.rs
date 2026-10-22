@@ -176,8 +176,11 @@ impl DistTable {
         // A target may name its own release URL: since sherpa-onnx v1.13.5 the iOS
         // xcframeworks are published under the rolling "xcframework" release, not the
         // versioned tag the other archives use.
+        // A dynamic-only replacement must not redirect an unchanged static archive.
+        let mode_url = if *is_dynamic { "dynamic_url" } else { "static_url" };
         let url_template = target_dist
-            .get("url")
+            .get(mode_url)
+            .or_else(|| target_dist.get("url"))
             .and_then(|u| u.as_str())
             .map(|u| u.replace("{tag}", &self.tag))
             .unwrap_or_else(|| self.url.clone());
